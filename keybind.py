@@ -1,6 +1,7 @@
 from os import system
 import xml.etree.ElementTree as ET
 import re
+from tenacity import retry, stop_after_attempt
 
 
 def puller():
@@ -55,10 +56,11 @@ def launch(packagename):
         f"adb shell monkey -p {packagename} -c android.intent.category.LAUNCHER 1")
 
 
+@retry(stop=stop_after_attempt(2))
 def extract():
     puller()
     with open("binds.xml", "r") as f:
         extract_data = f.read()
     root = ET.fromstring(extract_data)
     iterset = root.findall(".//node")
-    return iterset[25].find(".//node[@text]").get("text")
+    return iterset[25].get("text")
