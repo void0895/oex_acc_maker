@@ -1,6 +1,7 @@
 import keybind
 from time import sleep
 from os import system
+import gc
 
 
 def clear():
@@ -41,7 +42,7 @@ def black_canary(code):
         sleep(1.5)
         keybind.click(318, 2324)
         sleep(1.5)
-        with open("tokens.txt", "a") as f:
+        with open("fresh_500_tokens.txt", "a") as f:
             f.write(keybind.extract())
             f.write("\n")
         sleep(1.5)
@@ -67,17 +68,27 @@ def oex_sign(private_key):
     keybind.click(840, 1666)
 
 
-def buff():
-    with open("priv_key.txt", "r") as f:
+def buff(filename):
+    with open(filename, "r") as f:
         buff = f.readlines()
         return [s.replace("\n", '') for s in buff]
 
 
-keys = buff()
+def writer(filename, data):
+    with open(filename, "w") as f:
+        for line in data:
+            f.write(str(line))
+            f.write("\n")
 
-for p_key in keys:
-    black_canary(1)
-    oex_sign(f"{p_key}")
-    sleep(5)
-    black_canary(2)
-    sleep(10)
+
+if __name__ == "__main__":
+    keys = buff("tokens.txt")
+    for p_key, iter in zip(keys, range(len(keys))):
+        black_canary(1)
+        oex_sign(f"{p_key}")
+        sleep(5)
+        black_canary(2)
+        sleep(10)
+        gc.collect()
+        keys.pop(iter)
+        writer("tokens.txt", keys)
