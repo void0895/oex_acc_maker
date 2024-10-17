@@ -1,5 +1,5 @@
 from os import system
-import xml.etree.ElementTree as ET
+from lxml import etree
 import re
 from tenacity import retry, stop_after_attempt
 
@@ -59,8 +59,7 @@ def launch(packagename):
 @retry(stop=stop_after_attempt(2))
 def extract():
     puller()
-    with open("binds.xml", "r") as f:
-        extract_data = f.read()
-    root = ET.fromstring(extract_data)
-    iterset = root.findall(".//node")
-    return iterset[25].get("text")
+    tree = etree.parse("binds.xml")
+    data = tree.xpath("//node[starts-with(@text, '{\"domain\":')]/@text")
+    if data:
+    	return data[0]
