@@ -44,7 +44,19 @@ def code(data, email, code):
     r = requests.post(bind_url, headers=headers, data=data)
     if r.status_code == 200:
       print("success")
-    
+
+def checkpoint(check=None, iter=None):
+    if check =="save" and iter:
+        with open("checkpoint", "w") as f:
+            f.write(iter)
+    if check == "ask":
+        try:
+            with open("checkpoint", "r") as f:
+                buffer = f.read()
+                return buffer
+        except Exception:
+            return 0
+
   
   
 @retry
@@ -66,12 +78,16 @@ def per_iter(data):
     print("skipped")
       
 def run():
-  with open("tokens.txt", "r") as f:
+  iter = checkpoint(check="ask")
+  with open("new_gen_data.txt", "r") as f:
     tok_list = f.readlines()
     tok_list = [x.strip() for x in tok_list]
-    for acc in tok_list:
-      data = json.loads(acc)
+
+    for acc in range(int(iter), len(tok_list)):
+      data = json.loads(tok_list[acc])
       per_iter(data)
+      print("iter : " + str(acc))
+      checkpoint(check="save", iter=str(acc))
       
       
 run()
